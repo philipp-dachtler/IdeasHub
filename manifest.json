@@ -1,6 +1,6 @@
 {
-  "name": "LangweileWeg",
-  "short_name": "LangweileWeg",
+  "name": "IdeasHub",
+  "short_name": "IdeasHub",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#4f46e5",
@@ -8,13 +8,13 @@
   "description": "Swipe away boredom with activity suggestions",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "IMG_0561.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "IMG_0561.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
