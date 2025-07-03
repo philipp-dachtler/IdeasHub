@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangweileWeg</title>
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --bg-gradient-start: #6a11cb;
+            --bg-gradient-end: #2575fc;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-color: #1e293b;
+            --shadow: 0 10px 25px rgba(0,0,0,0.1);
+            --card-border: rgba(255,255,255,0.3);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --card-bg: rgba(30, 41, 59, 0.9);
+                --text-color: #f1f5f9;
+                --shadow: 0 10px 25px rgba(0,0,0,0.3);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            background-attachment: fixed;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .background-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            animation: float 15s infinite linear;
+        }
+
+        .shape:nth-child(1) {
+            width: 120px;
+            height: 120px;
+            top: 10%;
+            left: 15%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 80px;
+            height: 80px;
+            top: 70%;
+            left: 80%;
+            animation-delay: -5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            top: 50%;
+            left: 40%;
+            animation-delay: -10s;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-stack {
+            position: relative;
+            width: 100%;
+            height: 65%;
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--text-color);
+            transition: transform 0.4s ease, opacity 0.3s ease;
+            cursor: grab;
+            backface-visibility: hidden;
+            border: 1px solid var(--card-border);
+            overflow: hidden;
+            transform-origin: center bottom;
+        }
+
+        .card:active {
+            cursor: grabbing;
+        }
+
+        .card-content {
+            max-width: 90%;
+            line-height: 1.4;
+        }
+
+        .restart-btn {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 50px;
+            padding: 14px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .restart-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .restart-btn.hidden {
+            display: none;
+        }
+
+        .cookie-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            background: rgba(30, 41, 59, 0.95);
+            color: #f1f5f9;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .cookie-banner p {
+            font-size: 14px;
+            margin-right: 15px;
+            line-height: 1.5;
+        }
+
+        .cookie-banner button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .cookie-banner.hidden {
+            display: none;
+        }
+
+        .swipe-left {
+            transform: translateX(-150%) rotate(-30deg) !important;
+            opacity: 0 !important;
+        }
+
+        .swipe-right {
+            transform: translateX(150%) rotate(30deg) !important;
+            opacity: 0 !important;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(20px, -15px) rotate(5deg);
+            }
+            50% {
+                transform: translate(-15px, 10px) rotate(-5deg);
+            }
+            75% {
+                transform: translate(10px, 20px) rotate(3deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    
+    <div class="app-container">
+        <div class="card-stack" id="cardStack"></div>
+        <button class="restart-btn hidden" id="restartBtn">Restart</button>
+    </div>
+    
+    <div class="cookie-banner" id="cookieBanner">
+        <p>We use cookies to make this app better.</p>
+        <button id="acceptCookies">Got it!</button>
+    </div>
+
+    <script>
+        // Activity suggestions (200 unique ideas)
+        const activities = [
+            "Go for a walk in a park you've never visited",
+            "Learn a new language for 15 minutes",
+            "Write a short story or poem",
+            "Try a new recipe for dinner",
+            "Do 10 minutes of meditation",
+            "Call a friend or family member",
+            "Organize your bookshelf",
+            "Watch a documentary",
+            "Draw or paint something",
+            "Listen to a new music genre",
+            "Plan your dream vacation",
+            "Do 20 minutes of yoga",
+            "Write down 5 things you're grateful for",
+            "Learn a magic trick",
+            "Visit a local museum",
+            "Start a journal entry",
+            "Clean your workspace",
+            "Try a new coffee shop",
+            "Learn to solve a Rubik's cube",
+            "Watch the sunset",
+            "Do a digital detox for 1 hour",
+            "Learn basic origami",
+            "Write a letter to your future self",
+            "Try a new workout routine",
+            "Create a vision board",
+            "Research your family history",
+            "Learn about constellations",
+            "Take an online personality test",
+            "Practice deep breathing for 5 minutes",
+            "Rearrange your furniture",
+            "Learn to juggle",
+            "Start a savings challenge",
+            "Create a playlist for your mood",
+            "Try a new hairstyle",
+            "Learn about local history",
+            "Do a random act of kindness",
+            "Plan your next weekend adventure",
+            "Learn a new dance move",
+            "Write a product review",
+            "Try a brain training app",
+            "Visit a farmers market",
+            "Learn to whistle with your fingers",
+            "Watch TED talks on a new topic",
+            "Create a budget plan",
+            "Learn basic sign language",
+            "Do a puzzle",
+            "Try a new sport",
+            "Visit an animal shelter",
+            "Learn to tie different knots",
+            "Watch a classic movie",
+            "Practice public speaking in mirror",
+            "Start a mini herb garden",
+            "Learn to make a cocktail",
+            "Try geocaching",
+            "Create your own board game",
+            "Learn about a different culture",
+            "Write a bucket list",
+            "Try a new productivity method",
+            "Learn to speed read",
+            "Visit a botanical garden",
+            "Create digital art",
+            "Learn first aid basics",
+            "Try a new tea flavor",
+            "Practice memory techniques",
+            "Learn about sustainable living",
+            "Create a time capsule",
+            "Try outdoor photography",
+            "Learn basic car maintenance",
+            "Start a book club",
+            "Try a new pizza topping",
+            "Learn to play a musical instrument",
+            "Create a personal website",
+            "Try forest bathing",
+            "Learn about wine pairing",
+            "Start a compost bin",
+            "Try a new board game",
+            "Learn to code a simple game",
+            "Visit a historical site",
+            "Try aerial yoga",
+            "Learn about cryptocurrency",
+            "Create a cocktail recipe",
+            "Try glassblowing",
+            "Learn about philosophy",
+            "Start a sketch diary",
+            "Try pottery making",
+            "Learn about astronomy",
+            "Create a scavenger hunt",
+            "Try indoor rock climbing",
+            "Learn about psychology",
+            "Start a photo challenge",
+            "Try paddle boarding",
+            "Learn about architecture",
+            "Create a stop-motion video",
+            "Try a new breakfast dish",
+            "Learn about fashion history",
+            "Start a gratitude jar",
+            "Try archery",
+            "Learn about marine biology",
+            "Create a terrarium",
+            "Try soap making",
+            "Learn about animation",
+            "Start a dream journal",
+            "Try fencing",
+            "Learn about artificial intelligence",
+            "Create a podcast episode",
+            "Try a new ice cream flavor",
+            "Learn about quantum physics",
+            "Start a pen pal exchange",
+            "Try kite flying",
+            "Learn about ancient civilizations",
+            "Create a vision journal",
+            "Try candle making",
+            "Learn about renewable energy",
+            "Start a language exchange",
+            "Try roller skating",
+            "Learn about neuroscience",
+            "Create a short film",
+            "Try a new sushi roll",
+            "Learn about global politics",
+            "Start a fitness challenge",
+            "Try bird watching",
+            "Learn about genetics",
+            "Create a collage",
+            "Try mixology",
+            "Learn about space exploration",
+            "Start a blog",
+            "Try kayaking",
+            "Learn about virtual reality",
+            "Create a recipe book",
+            "Try indoor gardening",
+            "Learn about robotics",
+            "Start a meditation streak",
+            "Try disc golf",
+            "Learn about anthropology",
+            "Create a mood board",
+            "Try calligraphy",
+            "Learn about economics",
+            "Start a reading challenge",
+            "Try bouldering",
+            "Learn about film history",
+            "Create a personal manifesto",
+            "Try cheese tasting",
+            "Learn about mythology",
+            "Start a kindness project",
+            "Try stargazing",
+            "Learn about sociology",
+            "Create a travel map",
+            "Try perfume making",
+            "Learn about nutrition science",
+            "Start a daily sketch habit",
+            "Try slacklining",
+            "Learn about game design",
+            "Create a digital scrapbook",
+            "Try bread baking",
+            "Learn about paleontology",
+            "Start a mindfulness practice",
+            "Try snorkeling",
+            "Learn about cryptography",
+            "Create a personal logo",
+            "Try mixology",
+            "Learn about typography",
+            "Start a daily writing habit",
+            "Try orienteering",
+            "Learn about acoustics",
+            "Create a capsule wardrobe",
+            "Try terrarium building",
+            "Learn about meteorology",
+            "Start a daily gratitude practice",
+            "Try paddle tennis",
+            "Learn about environmental science",
+            "Create a personal brand",
+            "Try macrame",
+            "Learn about nanotechnology",
+            "Start a photo-a-day project",
+            "Try pilates",
+            "Learn about behavioral economics",
+            "Create a digital art portfolio",
+            "Try fermentation",
+            "Learn about material science",
+            "Start a 30-day challenge",
+            "Try aerial silks",
+            "Learn about biohacking",
+            "Create a personal development plan",
+            "Try woodworking",
+            "Learn about urban planning",
+            "Start a dream interpretation journal",
+            "Try beekeeping",
+            "Learn about forensic science",
+            "Create a vision statement",
+            "Try metal detecting",
+            "Learn about ethical hacking",
+            "Start a side project",
+            "Try parkour",
+            "Learn about consciousness studies",
+            "Create a life timeline",
+            "Try soap carving",
+            "Learn about particle physics"
+        ];
+
+        // DOM Elements
+        const cardStack = document.getElementById('cardStack');
+        const restartBtn = document.getElementById('restartBtn');
+        const cookieBanner = document.getElementById('cookieBanner');
+        const acceptCookiesBtn = document.getElementById('acceptCookies');
+
+        // Game state
+        let currentDeck = [];
+        let isDragging = false;
+        let startX, startY, offsetX, offsetY;
+        let currentCard = null;
+
+        // Initialize app
+        function init() {
+            loadDeck();
+            setupEventListeners();
+            checkCookieConsent();
+        }
+
+        // Create and shuffle deck
+        function loadDeck() {
+            currentDeck = [...activities];
+            shuffleDeck();
+            renderCardStack();
+        }
+
+        // Fisher-Yates shuffle algorithm
+        function shuffleDeck() {
+            for (let i = currentDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentDeck[i], currentDeck[j]] = [currentDeck[j], currentDeck[i]];
+            }
+        }
+
+        // Render cards to the stack
+        function renderCardStack() {
+            cardStack.innerHTML = '';
+            restartBtn.classList.add('hidden');
+            
+            if (currentDeck.length === 0) {
+                restartBtn.classList.remove('hidden');
+                return;
+            }
+            
+            const card = createCard(currentDeck[0]);
+            cardStack.appendChild(card);
+            currentCard = card;
+        }
+
+        // Create card element
+        function createCard(text) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<div class="card-content">${text}</div>`;
+            return card;
+        }
+
+        // Handle swipe gestures
+        function setupEventListeners() {
+            // Touch events
+            cardStack.addEventListener('touchstart', handleTouchStart, { passive: true });
+            cardStack.addEventListener('touchmove', handleTouchMove, { passive: false });
+            cardStack.addEventListener('touchend', handleTouchEnd);
+            
+            // Mouse events
+            cardStack.addEventListener('mousedown', handleMouseDown);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            
+            // Restart button
+            restartBtn.addEventListener('click', () => {
+                loadDeck();
+            });
+            
+            // Cookie consent
+            acceptCookiesBtn.addEventListener('click', () => {
+                localStorage.setItem('cookiesAccepted', 'true');
+                cookieBanner.classList.add('hidden');
+            });
+        }
+
+        function handleTouchStart(e) {
+            if (!currentCard) return;
+            const touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            isDragging = true;
+            currentCard.style.transition = 'none';
+        }
+
+        function handleTouchMove(e) {
+            if (!isDragging || !currentCard) return;
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            offsetX = touch.clientX - startX;
+            offsetY = touch.clientY - startY;
+            
+            // Apply card movement with rotation
+            const rotate = offsetX * 0.1;
+            currentCard.style.transform = `translateX(${offsetX}px) translateY(${offsetY}px) rotate(${rotate}deg)`;
+            
+            // Fade effect based on distance
+            const opacity = 1 - Math.min(Math.abs(offsetX) / 200, 0.5);
+            currentCard.style.opacity = opacity;
+        }
+
+        function handleTouchEnd() {
+            if (!isDragging || !currentCard) return;
+            isDragging = false;
+            
+            currentCard.style.transition = 'transform 0.4s ease, opacity 0.3s ease';
+            
+            // Check if swipe threshold is reached
+            if (Math.abs(offsetX) > 100) {
+                // Swipe direction class
+                const direction = offsetX > 0 ? 'swipe-right' : 'swipe-left';
+                currentCard.classList.add(direction);
+                
+                // Remove card after animation
+                setTimeout(() => {
+                    currentDeck.shift();
+                    renderCardStack();
+                }, 300);
+            } else {
+                // Return to original position
+                currentCard.style.transform = '';
+                currentCard.style.opacity = 1;
+            }
+        }
+
+        function handleMouseDown(e) {
+            if (!currentCard) return;
+            startX = e.clientX;
+            startY = e.clientY;
+            isDragging = true;
+            currentCard.style.transition = 'none';
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging || !currentCard) return;
+            
+            offsetX = e.clientX - startX;
+            offsetY = e.clientY - startY;
+            
+            // Apply card movement with rotation
+            const rotate = offsetX * 0.1;
+            currentCard.style.transform = `translateX(${offsetX}px) translateY(${offsetY}px) rotate(${rotate}deg)`;
+            
+            // Fade effect based on distance
+            const opacity = 1 - Math.min(Math.abs(offsetX) / 200, 0.5);
+            currentCard.style.opacity = opacity;
+        }
+
+        function handleMouseUp() {
+            if (!isDragging || !currentCard) return;
+            isDragging = false;
+            
+            currentCard.style.transition = 'transform 0.4s ease, opacity 0.3s ease';
+            
+            // Check if swipe threshold is reached
+            if (Math.abs(offsetX) > 100) {
+                // Swipe direction class
+                const direction = offsetX > 0 ? 'swipe-right' : 'swipe-left';
+                currentCard.classList.add(direction);
+                
+                // Remove card after animation
+                setTimeout(() => {
+                    currentDeck.shift();
+                    renderCardStack();
+                }, 300);
+            } else {
+                // Return to original position
+                currentCard.style.transform = '';
+                currentCard.style.opacity = 1;
+            }
+        }
+
+        // Cookie consent handling
+        function checkCookieConsent() {
+            const cookiesAccepted = localStorage.getItem('cookiesAccepted');
+            if (cookiesAccepted !== 'true') {
+                setTimeout(() => {
+                    cookieBanner.classList.remove('hidden');
+                }, 1500);
+            }
+        }
+
+        // Initialize PWA
+        function initPWA() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('service-worker.js')
+                        .then(reg => console.log('Service Worker registered'))
+                        .catch(err => console.log('Service Worker error:', err));
+                });
+            }
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            initPWA();
+        });
+    </script>
+</body>
+</html>
